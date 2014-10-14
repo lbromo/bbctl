@@ -27,6 +27,7 @@ import time
 import struct
 import subprocess
 import usb
+import sys, traceback
 
 class Bluebox(object):
 	# USB VID/PID
@@ -41,6 +42,8 @@ class Bluebox(object):
 	MCU 			= "atmega32u4"
 
 	# Data Endpoints
+        #DATA_IN = (usbutil.ENDPOINT_IN | 1)
+        #DATA_OUT = (usbutil.ENDPOINT_OUT | 2)
 	DATA_IN	     = (usb.util.ENDPOINT_IN  | 1)
 	DATA_OUT     = (usb.util.ENDPOINT_OUT | 2)
 
@@ -116,9 +119,6 @@ class Bluebox(object):
 
 	def find_bluebox(self, index=None, serial=None):
 		devs = usb.core.find(idVendor=self.VENDOR, idProduct=self.PRODUCT, find_all=True)
-		
-		if len(devs) < 1:
-			raise Exception("No devices found")
 
 		if serial is not None:
 			for dev in devs:
@@ -126,11 +126,13 @@ class Bluebox(object):
 					return dev
 			raise Exception("No BlueBox with serial {0} found".format(serial))
 		elif index is not None:
-			if len(devs) < index + 1:
-				raise Exception("No BlueBox at index {0}".format(index))
-			return devs[index]
+                        dev = None
+                        for i in range(index + 1):
+                                dev = devs.next()
+
+			return dev
 		else:
-			return devs[0]
+			return devs.next()
 
 
 	def __init__(self, index=None, serial=None, timeout=0):
@@ -145,10 +147,10 @@ class Bluebox(object):
 			self.dev.detach_kernel_driver(0)
 
 		self.dev.set_configuration()
-
-		self.manufacturer = usb.util.get_string(self.dev, 100, self.dev.iManufacturer)
-		self.product      = usb.util.get_string(self.dev, 100, self.dev.iProduct)
-		self.serial       = usb.util.get_string(self.dev, 100, self.dev.iSerialNumber)
+                
+		self.manufacturer = usb.util.get_string(self.dev, 256, self.dev.iManufacturer)
+		self.product      = usb.util.get_string(self.dev, 256, self.dev.iProduct)
+		self.serial       = usb.util.get_string(self.dev, 256, self.dev.iSerialNumber)
 		self.bus          = self.dev.bus
 		self.address      = self.dev.address
 
@@ -350,14 +352,16 @@ class Bluebox(object):
 		if not timeout:
 			timeout = self.timeout
 		try:
-			ret = self.dev.read(self.DATA_IN, self.DATAEPSIZE, 0, timeout=timeout)
+			ret = self.dev.read(self.DATA_IN, self.DATAEPSIZE, 5000)
 			size, progress, rssi, freq, flags, training, data = struct.unpack(self.DATAFMT, ret)
 			data = data[0:size]
 		except KeyboardInterrupt:
 			raise
-		except:
+		except Exception:
 			data = None
 			rssi = 0
 			freq = 0
+                        exc_type, exc_value, exc_traceback = sys.exc_info()
+                        traceback.print_exception(exc_type, exc_value, exc_traceback, limit=2, file=sys.stdout) 
 
 		return data, rssi, freq
