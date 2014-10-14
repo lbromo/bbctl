@@ -27,6 +27,7 @@ import time
 import struct
 import subprocess
 import usb
+import usb.util as usbutil
 import sys, traceback
 
 class Bluebox(object):
@@ -42,10 +43,10 @@ class Bluebox(object):
 	MCU 			= "atmega32u4"
 
 	# Data Endpoints
-        #DATA_IN = (usbutil.ENDPOINT_IN | 1)
-        #DATA_OUT = (usbutil.ENDPOINT_OUT | 2)
-	DATA_IN	     = (usb.util.ENDPOINT_IN  | 1)
-	DATA_OUT     = (usb.util.ENDPOINT_OUT | 2)
+        DATA_IN = (usbutil.ENDPOINT_IN | 1)
+        DATA_OUT = (usbutil.ENDPOINT_OUT | 2)
+	#DATA_IN	     = (usb.util.ENDPOINT_IN  | 1)
+	#DATA_OUT     = (usb.util.ENDPOINT_OUT | 2)
 
 	# RF Control
 	REQUEST_REGISTER	= 0x01
