@@ -504,7 +504,7 @@ def list(args):
 				bb.get_transmitted(),
 				bb.get_received(),
 				bb.get_fwrevision(),
-				bb.product))
+				bb.product.encode('ascii', 'ignore'))) # Added .encode('ascii', 'ignore') as it sometimes returns some unicode stuff 
 		except Exception as e:
 			if index == 0:
 				print("Error: no BlueBox found")
