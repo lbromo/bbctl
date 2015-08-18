@@ -507,7 +507,7 @@ def list(args):
 				bb.product.encode('ascii', 'ignore'))) # Added .encode('ascii', 'ignore') as it sometimes returns some unicode stuff 
 		except Exception as e:
 			if index == 0:
-				print("Error: no BlueBox found")
+				print("Failed to connect to BlueBox: {0}".format(e))
 			break
 		finally:
 			index += 1
