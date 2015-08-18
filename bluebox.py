@@ -43,8 +43,6 @@ class Bluebox(object):
 	MCU 			= "atmega32u4"
 
 	# Data Endpoints
-        #DATA_IN = (usbutil.ENDPOINT_IN | 1)
-        #DATA_OUT = (usbutil.ENDPOINT_OUT | 2)
 	DATA_IN	     = (usb.util.ENDPOINT_IN  | 1)
 	DATA_OUT     = (usb.util.ENDPOINT_OUT | 2)
 
@@ -148,7 +146,7 @@ class Bluebox(object):
 			self.dev.detach_kernel_driver(0)
 
 		self.dev.set_configuration()
-                
+
 		self.manufacturer = usb.util.get_string(self.dev, 256, self.dev.iManufacturer)
 		self.product      = usb.util.get_string(self.dev, 256, self.dev.iProduct)
 		self.serial       = usb.util.get_string(self.dev, 256, self.dev.iSerialNumber)

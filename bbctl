@@ -489,8 +489,7 @@ def list(args):
 	while True:
 		try:
 			bb = bluebox.Bluebox(index=index)
-			#if index == 0:
-			#	print(header)
+
 			print(fields.format(
 				index,
 				bb.get_serialnumber(),
@@ -504,7 +503,7 @@ def list(args):
 				bb.get_transmitted(),
 				bb.get_received(),
 				bb.get_fwrevision(),
-				bb.product.encode('ascii', 'ignore'))) # Added .encode('ascii', 'ignore') as it sometimes returns some unicode stuff 
+				bb.product.encode('ascii', 'ignore'))) # Added .encode('ascii', 'ignore') as BlueBox.product sometimes returns some unicode chars 
 		except Exception as e:
 			if index == 0:
 				print("Failed to connect to BlueBox: {0}".format(e))
