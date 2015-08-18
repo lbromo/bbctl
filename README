@@ -1,4 +1,4 @@
-About the BlueBox
+# About the BlueBox
 -----------------
 
 The bluebox is a USB-powered ground station box design for the AAUSAT3 cubesat
@@ -11,11 +11,23 @@ of the open source LUFA USB stack and uses libusb and pyusb for communication
 between the device and control program, bbctl.
 
 
-How to install bbctl
---------------------
+# How to install bbctl
+Make sure libusb is installed on the system. On Ubuntu this can be installed by 
+issuing the following command:
+```
+$ sudo apt-get install libusb1.0-0
+```
 
-Go to software/bbctl and run:
-
-    $ sudo python2 setup.py install
+Install bbctl together with python dependencies:
+```
+$ sudo pip2 install -r requirements.txt
+$ sudo python2 setup.py install
+``` 
 
 Note that you need gcc to compile the FEC extension module.
+
+## Optional
+Copy the udev rules to /etc/udev/rules.d, to allow user space access to the Bluebox:
+```
+$ sudo cp udev/* /etc/udev/rules.d
+```
