@@ -136,7 +136,7 @@ class Bluebox(object):
 			return devs.next()
 
 
-	def __init__(self, index=None, serial=None, timeout=0):
+	def __init__(self, index=None, serial=None, timeout=None):
 		self.timeout = timeout
 
 		if index is not None and serial is not None:
@@ -356,13 +356,13 @@ class Bluebox(object):
 			ret = self.dev.read(self.DATA_IN, self.DATAEPSIZE, timeout)
 			size, progress, rssi, freq, flags, training, data = struct.unpack(self.DATAFMT, ret)
 			data = data[0:size]
+                except usb.USBError as e:
+                        data = None
+                        rssi = 0
+                        freq = 0
 		except KeyboardInterrupt:
 			raise
 		except Exception:
-			data = None
-			rssi = 0
-			freq = 0
-                        exc_type, exc_value, exc_traceback = sys.exc_info()
-                        traceback.print_exception(exc_type, exc_value, exc_traceback, limit=2, file=sys.stdout) 
+                        raise
 
 		return data, rssi, freq
