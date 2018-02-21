@@ -31,6 +31,14 @@
 #include "led.h"
 #include "ptt.h"
 
+#define PORT_GPS_CONTROL	PORTD
+#define DIR_GPS_CONTROL		DDRD
+#define PIN_GPS_RX			2
+
+volatile char gpsdata[128]={0};
+volatile uint8_t gpsbytecount=0;
+volatile uint8_t gpsstringready=0;
+
 #define rf_config_single(_type, _name) 						\
 	_type _name; 								\
 	if (direction == ENDPOINT_DIR_OUT) {					\
@@ -100,6 +108,38 @@ static void setup_hardware(void)
 
 	/* Initialize SPI */
 	spi_init_config(SPI_SLAVE | SPI_MSB_FIRST);
+
+	
+	/* INIT UART1 Receive using IRQ for GPS string */
+	PORT_GPS_CONTROL    |= _BV(PIN_GPS_RX);
+	DIR_GPS_CONTROL    &= ~_BV(PIN_GPS_RX);
+	cli();
+	UCSR1A = 0;
+	UCSR1B = (1 << RXEN1)  | (1 << RXCIE1);
+	UCSR1C = (1 << UCSZ10) | (1 << UCSZ11);
+	/* 9600 Baud Rate at 16.00000 MHz */
+  	UBRR1L = 103;
+	UBRR1H = 0;
+	//sei();
+}
+
+ISR(USART1_RX_vect) {
+  /* Read received data */
+  char received_data = UDR1;
+  /* Place data in ring buffer */
+  /* As interrupts are disabled race conditions cannot occur here */
+  if(gpsbytecount<255 && gpsstringready==0){
+	  gpsdata[gpsbytecount] = received_data;
+	  gpsbytecount++;
+	  if((gpsbytecount>128) || (received_data=='\n')){
+	  	
+	  	if(strncmp(gpsdata,"$GPRMC",6)==0){
+			gpsstringready=1;
+			gpsdata[gpsbytecount]='\0';
+		}
+		gpsbytecount=0;
+	  }
+	}
 }
 
 static void callsign_init(char *cs)
@@ -362,6 +402,36 @@ static void tx_task(void)
 	}
 }
 
+/*
+struct data_buffer {
+	volatile uint16_t size;
+	volatile uint16_t progress;
+	volatile int16_t rssi;
+	volatile int16_t freq;
+	volatile uint8_t flags;
+	volatile uint16_t training;
+	uint8_t data[DATA_LENGTH];
+};
+*/
+static void gps_task(void)
+{
+	if(gpsstringready){
+		led_on(LED_ALL);
+		
+		if(csma_tx_allowed() && spi_tx_prepare()){
+			if (!(data[front].flags & FLAG_TX_READY)){
+				strncpy(&data[front].data, gpsdata, 125);
+				data[front].size = 125;
+				data[front].flags |= FLAG_TX_READY;
+				gpsstringready=0;
+				adf_set_tx_mode();
+				spi_tx_start();
+			}
+		}
+
+	}
+}
+
 static void conf_task(void)
 {
 	cli();
@@ -415,5 +485,6 @@ int main(void)
 		rx_task();
 		tx_task();
 		USB_USBTask();
+		gps_task();
 	}
 }
