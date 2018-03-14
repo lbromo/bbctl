@@ -402,34 +402,48 @@ static void tx_task(void)
 	}
 }
 
-/*
-struct data_buffer {
-	volatile uint16_t size;
-	volatile uint16_t progress;
-	volatile int16_t rssi;
-	volatile int16_t freq;
-	volatile uint8_t flags;
-	volatile uint16_t training;
-	uint8_t data[DATA_LENGTH];
-};
-*/
+
+static void do_hpm_code(uint8_t* datain, uint8_t length)
+{
+	uint16_t counterl=0;
+
+	while(counterl<35){
+		counterl++;
+		datain[counterl+2*35] = (datain[counterl] ^ datain[counterl+35]);
+	}
+
+}
+
 static void gps_task(void)
 {
+	static uint16_t counter=0;
+	static uint16_t max_counter=10;
+
 	if(gpsstringready){
-		led_on(LED_ALL);
-		
+		counter++;
+	}
+	if(counter > max_counter){
 		if(csma_tx_allowed() && spi_tx_prepare()){
 			if (!(data[front].flags & FLAG_TX_READY)){
 				strncpy(&data[front].data, gpsdata, 125);
-				data[front].size = 125;
+				data[front].size = 125;//strnlen(&data[front].data, 125);
 				data[front].flags |= FLAG_TX_READY;
 				gpsstringready=0;
+				counter=0;
+				do_hpm_code(&data[front].data, strnlen(&data[front].data, 125));
 				adf_set_tx_mode();
 				spi_tx_start();
 			}
 		}
+		if(max_counter==10)
+			max_counter=11;
+		else if(max_counter==9)
+			max_counter=10;
+		else if(max_counter==11)
+			max_counter=9;
 
-	}
+
+	}else{gpsstringready=0;}
 }
 
 static void conf_task(void)
@@ -482,7 +496,7 @@ int main(void)
 
 	while (1) {
 		conf_task();
-		rx_task();
+		//rx_task();
 		tx_task();
 		USB_USBTask();
 		gps_task();
