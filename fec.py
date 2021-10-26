@@ -25,6 +25,7 @@ import hashlib
 import hmac
 import ctypes
 import codecs
+from distutils.sysconfig import get_config_var
 
 VITERBI_RATE = 2
 VITERBI_TAIL = 1
@@ -46,7 +47,17 @@ SHORT_FRAME_LIMIT = 25
 LONG_FRAME_LIMIT = 86
 
 path = os.path.dirname(os.path.abspath(__file__))
-bbfec = ctypes.CDLL(path + "/bbfec.so")
+
+# Starting with Python 3.5 "EXT_SUFFIX" variable contains platform
+# information, for example ".cp35-win_amd64" or
+# ".cpython-39-x86_64-linux-gnu.so". This is used when installing the
+# package with pip3 and we should probably search for that instead, as
+# that is what the so file is named like when installed.
+ext_suffix = get_config_var('EXT_SUFFIX')
+if ext_suffix:
+    bbfec = ctypes.CDLL(path + "/bbfec" + ext_suffix)
+else:
+    bbfec = ctypes.CDLL(path + "/bbfec.so")
 
 # viterbi
 bbfec.create_viterbi.argtypes = [ctypes.c_int16]
