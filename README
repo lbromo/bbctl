@@ -16,6 +16,11 @@ How to install bbctl
 
 Go to software/bbctl and run:
 
-    $ sudo python2 setup.py install
+    $ pip3 install . --user
 
 Note that you need gcc to compile the FEC extension module.
+
+Make sure to add the pip localtion bin path to your PATH variable. For
+example append:
+
+    $ echo "~/.local/bin:$PATH" >> ~/.bashrc
