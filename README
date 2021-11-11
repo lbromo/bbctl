@@ -23,4 +23,4 @@ Note that you need gcc to compile the FEC extension module.
 Make sure to add the pip localtion bin path to your PATH variable. For
 example append:
 
-    $ echo "~/.local/bin:$PATH" >> ~/.bashrc
+    $ echo "export ~/.local/bin:$PATH" >> ~/.bashrc
