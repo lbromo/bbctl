@@ -14,13 +14,19 @@ between the device and control program, bbctl.
 How to install bbctl
 --------------------
 
-Go to software/bbctl and run:
+Using pip3:
 
-    $ pip3 install . --user
+    $ pip3 install -r requirements.txt --user
 
 Note that you need gcc to compile the FEC extension module.
 
 Make sure to add the pip localtion bin path to your PATH variable. For
 example append:
 
-    $ echo "export ~/.local/bin:$PATH" >> ~/.bashrc
+    $ echo "export PATH=~/.local/bin:\$PATH" >> ~/.bashrc
+
+Install the udev rules such that you don't need sudo to run bbtcl:
+
+    $ sudo cp udev/* /etc/udev/rules.d/
+    $ sudo udevadm control --reload-rules && sudo udevadm trigger
+
